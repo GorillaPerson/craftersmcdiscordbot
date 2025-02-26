@@ -2,8 +2,10 @@ import discord
 import requests
 from bs4 import BeautifulSoup
 import asyncio
+import os
 
-TOKEN = "YOUR_DISCORD_BOT_TOKEN"
+TOKEN = os.getenv("TOKEN")
+
 URL = "https://craftersmc.wiki.gg/wiki/CraftersMC_SkyBlock_Wiki"
 
 intents = discord.Intents.default()
