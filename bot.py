@@ -3,20 +3,22 @@ from discord.ext import commands
 from discord import app_commands
 import os
 
+# Your guild (server) ID where you want to register the slash command
+GUILD_ID = 1371450044586266655
+
+# Create the bot instance
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree  # For slash commands
 
 @bot.event
 async def on_ready():
+    # Sync the slash command to the specified guild immediately
+    await tree.sync(guild=discord.Object(id=GUILD_ID))
     print(f"Logged in as {bot.user}")
-    try:
-        synced = await tree.sync()
-        print(f"Synced {len(synced)} slash command(s).")
-    except Exception as e:
-        print(e)
+    print(f"Slash commands synced to guild {GUILD_ID}")
 
-@tree.command(name="nitro", description="Sends a fake Nitro gift message.")
+@tree.command(name="nitro", description="Sends a fake Nitro gift message.", guild=discord.Object(id=GUILD_ID))
 async def fake_nitro(interaction: discord.Interaction):
     embed = discord.Embed(
         title="You've been gifted a subscription!",
@@ -35,3 +37,6 @@ async def fake_nitro(interaction: discord.Interaction):
     view.add_item(button)
 
     await interaction.response.send_message(embed=embed, view=view)
+
+# Run the bot using your Discord token stored as an environment variable
+bot.run(os.environ["DISCORD_TOKEN"])
