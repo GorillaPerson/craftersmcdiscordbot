@@ -1,32 +1,37 @@
 import discord
-import requests
-from bs4 import BeautifulSoup
-import asyncio
+from discord.ext import commands
+from discord import app_commands
 import os
 
-TOKEN = os.getenv("TOKEN")
-
-URL = "https://craftersmc.wiki.gg/wiki/CraftersMC_SkyBlock_Wiki"
-
 intents = discord.Intents.default()
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
+tree = bot.tree  # For slash commands
 
-async def fetch_timer():
-    response = requests.get(URL)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, "lxml")
-        timer_element = soup.select_one("table:nth-of-type(2) tr td:nth-of-type(2) span:nth-of-type(2)")
-        return timer_element.text if timer_element else "Timer not found"
-    return "Failed to fetch data"
-
-@client.event
+@bot.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
-    channel = discord.utils.get(client.get_all_channels(), name="1344375338008055910")
-    while True:
-        timer = await fetch_timer()
-        if channel:
-            await channel.send(f"Current Timer: {timer}")
-        await asyncio.sleep(60)  # Fetch every minute
+    print(f"Logged in as {bot.user}")
+    try:
+        synced = await tree.sync()
+        print(f"Synced {len(synced)} slash command(s).")
+    except Exception as e:
+        print(e)
 
-client.run(TOKEN)
+@tree.command(name="nitro", description="Sends a fake Nitro gift message.")
+async def fake_nitro(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="You've been gifted a subscription!",
+        description="**1 month of Discord Nitro**\n\nClick the button below to accept.",
+        color=0x5865F2
+    )
+    embed.set_thumbnail(url="https://cdn.discordapp.com/emojis/936790831748554792.png")
+
+    button = discord.ui.Button(label="Accept", style=discord.ButtonStyle.success)
+
+    async def button_callback(i: discord.Interaction):
+        await i.response.send_message("This is a mock Nitro message for demo purposes.", ephemeral=True)
+
+    button.callback = button_callback
+    view = discord.ui.View()
+    view.add_item(button)
+
+    await interaction.response.send_message(embed=embed, view=view)
