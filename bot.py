@@ -8,18 +8,28 @@ from discord import app_commands
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Function to generate a division-style key: XXXX-XXXX-XXXX-XXXX
+# --- KEY GENERATORS ---
+
 def generate_division_key():
+    # Format: XXXX-XXXX-XXXX-XXXX (uppercase letters and digits)
     return '-'.join(
         ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
         for _ in range(4)
     )
 
-# Dictionary of available key formats
+def generate_disconnect_key():
+    # Format: xxxxxxxxxx-xxxxxxxxxx-RustEXT (lowercase hex)
+    part1 = ''.join(random.choices('0123456789abcdef', k=10))
+    part2 = ''.join(random.choices('0123456789abcdef', k=10))
+    return f"{part1}-{part2}-RustEXT"
+
+# Map of available key types
 key_generators = {
     "division": generate_division_key,
-    # Add more formats later like "disconnect": generate_disconnect_key
+    "disconnect": generate_disconnect_key
 }
+
+# --- BOT EVENTS & COMMANDS ---
 
 @bot.event
 async def on_ready():
@@ -31,7 +41,7 @@ async def on_ready():
         print("Error syncing commands:", e)
 
 @bot.tree.command(name="generatekey", description="Generate random keys")
-@app_commands.describe(name="Key type (like division)", amount="Number of keys to generate")
+@app_commands.describe(name="Key type (like division or disconnect)", amount="Number of keys to generate")
 async def generatekey(interaction: discord.Interaction, name: str, amount: int):
     allowed_channel_id = 1372287750396575876  # Only allow this channel
 
@@ -68,5 +78,5 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-# Start the bot with the token from environment variable (Railway compatible)
+# --- RUN THE BOT ---
 bot.run(os.environ["DISCORD_TOKEN"])
