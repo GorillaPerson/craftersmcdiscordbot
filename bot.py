@@ -2,6 +2,7 @@ import random
 import string
 import discord
 import os
+import io
 from discord.ext import commands
 from discord import app_commands
 
@@ -23,7 +24,7 @@ def generate_disconnect_key():
     part2 = ''.join(random.choices('0123456789abcdef', k=10))
     return f"{part1}-{part2}-RustEXT"
 
-# Map of available key types
+# Key type registry
 key_generators = {
     "division": generate_division_key,
     "disconnect": generate_disconnect_key
@@ -43,7 +44,7 @@ async def on_ready():
 @bot.tree.command(name="generatekey", description="Generate random keys")
 @app_commands.describe(name="Key type (like division or disconnect)", amount="Number of keys to generate")
 async def generatekey(interaction: discord.Interaction, name: str, amount: int):
-    allowed_channel_id = 1372287750396575876  # Only allow this channel
+    allowed_channel_id = 1372287750396575876
 
     if interaction.channel_id != allowed_channel_id:
         await interaction.response.send_message(
@@ -69,6 +70,7 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
     keys = [generate() for _ in range(amount)]
     key_list = '\n'.join(keys)
 
+    # Embed
     embed = discord.Embed(
         title=f"{name.capitalize()} - Generated Keys",
         description=f"```{key_list}```",
@@ -76,7 +78,13 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
     )
     embed.set_footer(text=f"Requested by {interaction.user.name}")
 
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    # Text file
+    file = discord.File(
+        io.StringIO(key_list),
+        filename=f"{name}_keys.txt"
+    )
+
+    await interaction.response.send_message(embed=embed, file=file, ephemeral=True)
 
 # --- RUN THE BOT ---
 bot.run(os.environ["DISCORD_TOKEN"])
