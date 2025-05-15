@@ -44,7 +44,7 @@ async def on_ready():
 @app_commands.describe(name="Key type (like division or disconnect)", amount="Number of keys to generate")
 async def generatekey(interaction: discord.Interaction, name: str, amount: int):
     allowed_channel_id = 1372287750396575876
-    privileged_role_id = 1372362345568800788  # Replace with your actual role ID
+    privileged_role_id = 1372362345568800788  # Replace with your actual privileged role ID
 
     if interaction.channel_id != allowed_channel_id:
         await interaction.response.send_message(
@@ -63,7 +63,7 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
         return
 
     # Check if user has the privileged role
-    member = interaction.guild.get_member(interaction.user.id)
+    member = interaction.user  # Fixed from get_member
     has_privileged_role = any(role.id == privileged_role_id for role in member.roles)
 
     max_keys = 1000 if has_privileged_role else 20
@@ -80,7 +80,7 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
     keys = [generate() for _ in range(amount)]
     key_list = '\n'.join(keys)
 
-    # Private embed
+    # Private embed with keys
     private_embed = discord.Embed(
         title=f"{name.capitalize()} - Generated Keys",
         description=f"```{key_list}```",
