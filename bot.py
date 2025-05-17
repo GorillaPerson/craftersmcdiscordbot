@@ -22,9 +22,13 @@ def generate_disconnect_key():
     part2 = ''.join(random.choices('0123456789abcdef', k=10))
     return f"{part1}-{part2}-RustEXT"
 
+def generate_r6ua_key():
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=24))
+
 key_generators = {
     "division": generate_division_key,
-    "disconnect": generate_disconnect_key
+    "disconnect": generate_disconnect_key,
+    "r6ua": generate_r6ua_key
 }
 
 # --- BOT EVENTS ---
@@ -41,7 +45,7 @@ async def on_ready():
 # --- SLASH COMMAND ---
 
 @bot.tree.command(name="generatekey", description="Generate random keys")
-@app_commands.describe(name="Key type (like division or disconnect)", amount="Number of keys to generate")
+@app_commands.describe(name="Key type (like division, disconnect, or r6ua)", amount="Number of keys to generate")
 async def generatekey(interaction: discord.Interaction, name: str, amount: int):
     allowed_channel_id = 1372287750396575876
     privileged_role_id = 1372362345568800788  # Replace with your actual privileged role ID
@@ -63,7 +67,7 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
         return
 
     # Check if user has the privileged role
-    member = interaction.user  # Fixed from get_member
+    member = interaction.user  # This is a Member object
     has_privileged_role = any(role.id == privileged_role_id for role in member.roles)
 
     max_keys = 1000 if has_privileged_role else 20
@@ -102,3 +106,4 @@ async def generatekey(interaction: discord.Interaction, name: str, amount: int):
 
 # --- RUN BOT ---
 bot.run(os.environ["DISCORD_TOKEN"])
+
